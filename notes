@@ -1,0 +1,100 @@
+bool filter(container, predicate): # implementation of |
+    tmp = container::type{}
+    for elem in container:
+      if predicate(elem):
+        tmp.append(elem)
+        
+    return tmp
+
+arg::size_type size(arg):
+    return arg.size()
+
+filtered_results = results | size > 42 # results is not modified
+# predicate = struct p { bool operator()(container::elem_type e) { return e.size() > 42; } };
+
+results | length > 42 and is_uppercase
+
+k = results => *3 => -2
+k = results => *3 and -2 => 
+k = results => 0 if < 1
+
+struct Foo:
+    int i
+    int j
+    
+struct Bar:
+    int k
+    int l
+    
+foo = Foo{1, 2} # foo.i = 1
+bar = foo => Bar 
+                .k = i * 2
+                .l = j / 2
+
+bar = foo => Bar{i * 2, j / 2}
+bar = Bar{foo.i * 2, foo.j / 2}
+
+
+bool Zero(arg):
+    return arg == 0
+
+double scale(arg1, arg2)
+where arg2 not Zero # a not Zero check is needed or implicit // not Zero
+:
+    return arg1 / arg2
+
+arg1 = 42
+arg2 = 13
+if not Zero(arg2): # issue error if this is missing
+    s = scale(arg1, arg2) # inside this if statement arg2 has a label 'not Zero'
+    s = arg1 / arg2 # rhs of operator/ should require 'not Zero'
+  
+arg2 = 14 // not Zero # assign 'not Zero' label to arg2
+s = scale(arg1, arg2)
+
+
+double get_weighted_average(container, weights)
+where
+    not Empty container
+    is SameSize(container, weights)
+:
+  weighted_sum = container | transform(*weight) | reduce(+)
+  return weighted_sum / container.size
+
+useful conditions:
+    Unary: Zero, Positive, Negative, NonNegative, Sorted, 
+    Variadic: SizeIsSame()
+
+
+assumptions made on types = concepts:
+Container, 
+
+-> means built-in compile time functions
+HasMethod, HasMember, HasProperty, ReturnType, 
+concepts return bool
+
+concept Container(container):
+    return container->HasMethod(is_empty) and
+           container->HasProperty(size) and
+           container->ReturnType(container.size) == int
+    
+container::type subtract(container, value)
+requires
+    container is Container
+:
+    for elem in container:
+        elem -= value
+
+container::type subtract(const container, value)
+requires
+    container is Container
+:
+    tmp = container
+    subtract(tmp, value)
+    return tmp
+
+    
+    
+foo = Foo{}
+bar = foo  # copy
+bar = *foo # reference, type of bar is Foo*
