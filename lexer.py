@@ -19,7 +19,7 @@ class Tokens(Enum):
 
 
 keywords = ['int', 'float', 'double', 'array', 'bool', 'return', 'class']
-separators = ['{', '}', '<', '>']
+separators = ['{', '}', '<', '>', ',']
 operators = ['=']
 literals = r'^([0-9]+|".*")$'
 identifiers = r'^(\w+)$'
@@ -66,31 +66,35 @@ def process_leading_spaces(line, index):
     return indent_count
 
 
-mpl_file = sys.argv[1]
-with open(mpl_file, 'r') as f:
-    for line_index, line in enumerate(f.readlines()):
-        if len(line.strip()) == 0:
-            continue
+def process_line(line, line_index):
+    if len(line.strip()) == 0:
+        return
 
-        indent_count = process_leading_spaces(line, line_index)
-        if indent_count > 0:
-            symbol_table.append((Tokens.INDENTATION, indent_count))
-        words = line.split()
-        for word in words:
-            token = process_word(word)
-            if token:
-                symbol_table.append(token)
-            else:
-                index = 0
-                while index < len(word):
-                    tokens = process_sub_word(word, index)
-                    if tokens:
-                        index, token = tokens[-1]
-                        index += 1
-                        symbol_table.append(token)
-                    else:
-                        break
+    indent_count = process_leading_spaces(line, line_index)
+    if indent_count > 0:
+        symbol_table.append((Tokens.INDENTATION, indent_count))
+    words = line.split()
+    for word in words:
+        token = process_word(word)
+        if token:
+            symbol_table.append(token)
+        else:
+            index = 0
+            while index < len(word):
+                tokens = process_sub_word(word, index)
+                if tokens:
+                    index, token = tokens[-1]
+                    index += 1
+                    symbol_table.append(token)
+                else:
+                    break
 
 
-for symbol in symbol_table:
-    print(symbol)
+if __name__ == '__main__':
+    mpl_file = sys.argv[1]
+    with open(mpl_file, 'r') as f:
+        for line_index, line in enumerate(f.readlines()):
+            process_line(line, line_index)
+
+    for symbol in symbol_table:
+        print(symbol)
